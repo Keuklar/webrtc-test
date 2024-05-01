@@ -4,4 +4,6 @@
   </div>
   <input type="text" [(ngModel)]="newMessage" (keydown.enter)="sendMessage()" placeholder="Type your message...">
   <button (click)="sendMessage()">Send</button>
+  <button (click)="closeConnections()">Close connections</button>
+  <button (click)="createConnections()">Start connections</button>
 </div>

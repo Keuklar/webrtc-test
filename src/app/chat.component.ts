@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'
 
@@ -19,17 +19,13 @@ function onAddIceCandidateError(error: { toString: () => any; }) {
   imports: [CommonModule, FormsModule],
   standalone: true
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent {
   chatMessages: string[] = [];
   newMessage: string = '';
   sendChannel!: RTCDataChannel;
-  remoteConnection!: RTCPeerConnection;
-  localConnection!: RTCPeerConnection;
+  remoteConnection?: RTCPeerConnection;
+  localConnection?: RTCPeerConnection;
   receiveChannel!: RTCDataChannel;
-
-  ngOnInit(): void {
-    this.createConnections();
-  }
 
   createConnections() {
     const servers = undefined;
@@ -43,18 +39,41 @@ export class ChatComponent implements OnInit {
     // resetUI();
   }
 
+  closeDataChannels() {
+    this.closeChannels();
+    this.closeConnections();
+    // resetUI();
+  }
+
+
+  closeChannels() {
+    console.log('Closing data channels');
+    this.sendChannel.close();
+    console.log('Closed data channel with label: ' + this.sendChannel.label);
+    this.receiveChannel.close();
+    console.log('Closed data channel with label: ' + this.receiveChannel.label);
+  }
+
+  closeConnections() {
+    this.localConnection?.close();
+    this.remoteConnection?.close();
+    this.localConnection = undefined;
+    // this.remoteConnection = undefined;
+    console.log('Closed peer connections');
+  }
+
   sendMessage() {
     const message = this.newMessage.trim();
     if (message) {
-      this.chatMessages.push(message);
       this.sendData(message);
       this.newMessage = '';
     }
   }
 
   sendData(message: string) {
-    console.info('dataChannel.readyState:', this.sendChannel.readyState);
-    if (this.sendChannel.readyState === 'open') {
+    console.info('dataChannel.readyState:', this.sendChannel?.readyState);
+    if (this.sendChannel?.readyState === 'open') {
+      this.chatMessages.push(message);
       this.sendChannel.send(message);
       console.info('Sent Data: ' + message);
     }
@@ -65,8 +84,7 @@ export class ChatComponent implements OnInit {
   }
 
   onIceCandidate(pc: RTCPeerConnection, event: RTCPeerConnectionIceEvent) {
-    this.getOtherPc(pc)
-      .addIceCandidate(<RTCIceCandidate>event.candidate) // hum hum
+    this.getOtherPc(pc)?.addIceCandidate(<RTCIceCandidate>event.candidate) // hum hum
       .then(
         onAddIceCandidateSuccess,
         onAddIceCandidateError
@@ -76,7 +94,7 @@ export class ChatComponent implements OnInit {
 
   gotDescription1(remoteConnection: RTCPeerConnection) {
     return (desc: RTCSessionDescriptionInit) => {
-      this.localConnection.setLocalDescription(desc);
+      this.localConnection?.setLocalDescription(desc);
       console.info(`Offer from localConnection\n${desc.sdp}`);
       remoteConnection.setRemoteDescription(desc);
       remoteConnection.createAnswer().then(
@@ -90,7 +108,7 @@ export class ChatComponent implements OnInit {
     return (desc: RTCSessionDescriptionInit) => {
       remoteConnection.setLocalDescription(desc);
       console.info(`Answer from remoteConnection\n${desc.sdp}`);
-      this.localConnection.setRemoteDescription(desc);
+      this.localConnection?.setRemoteDescription(desc);
     }
   }
 
@@ -133,17 +151,12 @@ export class ChatComponent implements OnInit {
     console.info('Receive Channel Callback');
     this.receiveChannel = event.channel;
     this.receiveChannel.onmessage = (event: MessageEvent) => {
-      console.info('Received Message');
-      console.info(event.data);
+      console.info(`Received Message ${event.data}`);
     }
-    this.receiveChannel.onopen = (e) => console.info(`type: ${e}`);
-    this.receiveChannel.onclose = (e) => console.info(`type: ${e}`);
-
-
-/*     this.receiveChannel.onmessage = this.onReceiveMessageCallback;
+    this.receiveChannel.onmessage = this.onReceiveMessageCallback;
     this.receiveChannel.onopen = this.onReceiveChannelStateChange;
     this.receiveChannel.onclose = this.onReceiveChannelStateChange;
- */  }
+  }
 
   onReceiveMessageCallback = (event: MessageEvent) => {
     console.info('Received Message');
