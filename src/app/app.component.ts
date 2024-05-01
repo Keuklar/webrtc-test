@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-// import { RTCPeerConnection, RTCSessionDescription } from 'wrtc';
 import { ChatComponent } from './chat.component';
+import { ChatComponentSimplified } from './chat.component.simplified';
 
 
 
@@ -13,7 +13,7 @@ import { ChatComponent } from './chat.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ChatComponent],
+  imports: [RouterOutlet, ChatComponent, ChatComponentSimplified],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

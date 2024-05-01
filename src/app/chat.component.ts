@@ -33,9 +33,10 @@ export class ChatComponent {
     this.sendChannel = this.createSendChannel(this.localConnection);
     this.remoteConnection = this.createRemoteConnection(servers);
     this.localConnection.createOffer().then(
-      this.gotDescription1(this.remoteConnection),
+      this.gotDescription1(this.remoteConnection)      
+    ).catch(
       this.onCreateSessionDescriptionError
-    );
+    ) ;
     // resetUI();
   }
 
@@ -123,6 +124,7 @@ export class ChatComponent {
       this.onIceCandidate(remoteConnection, e);
     };
     remoteConnection.ondatachannel = this.receiveChannelCallback;
+    // remoteConnection.onnegotiationneeded
     return remoteConnection;
   }
 
